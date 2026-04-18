@@ -9,6 +9,8 @@ const MODEL_MAP: Record<ModelTier, string> = {
   pro: 'gemini-2.5-pro-preview-tts'
 };
 
+const AUDIO_TAG_PATTERN = /\[[^\]]+\]/;
+
 function getApiKey(): string {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -33,12 +35,29 @@ function extractAudioBase64(response: any): string {
   return data;
 }
 
+function buildSpeechPrompt(inputText: string): string {
+  const hasAudioTags = AUDIO_TAG_PATTERN.test(inputText);
+
+  if (!hasAudioTags) {
+    return inputText;
+  }
+
+  return [
+    'You are generating expressive speech audio from a transcript.',
+    'Treat text in square brackets as performance cues (emotion, tone, pace, delivery).',
+    'Do not speak the bracket tags literally.',
+    'Apply noticeable variation between tagged segments while keeping natural voice quality.',
+    'Transcript:',
+    inputText
+  ].join('\n');
+}
+
 export async function generateSingleSpeakerSpeech(
   text: string,
   voiceName = 'Kore',
   modelTier: ModelTier = 'flash'
 ): Promise<SpeechResult> {
-  return generateSpeechFromPrompt(text, voiceName, modelTier);
+  return generateSpeechFromPrompt(buildSpeechPrompt(text), voiceName, modelTier);
 }
 
 async function generateSpeechFromPrompt(
@@ -81,6 +100,6 @@ export async function generateStyledSpeakerSpeech(
   voiceName = 'Kore',
   modelTier: ModelTier = 'flash'
 ): Promise<SpeechResult> {
-  const prompt = buildDirectorPrompt(transcript, directorNotes);
+  const prompt = buildSpeechPrompt(buildDirectorPrompt(transcript, directorNotes));
   return generateSpeechFromPrompt(prompt, voiceName, modelTier);
 }

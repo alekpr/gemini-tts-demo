@@ -52,5 +52,14 @@ export const PRESETS: Record<PresetKey, VoicePreset> = {
 };
 
 export function buildDirectorPrompt(transcript: string, directorNotes: string): string {
-  return `### DIRECTOR'S NOTES\n${directorNotes}\n\n#### TRANSCRIPT\n${transcript}`;
+  return `### DIRECTOR'S NOTES
+${directorNotes}
+
+### PERFORMANCE RULES
+- If transcript contains audio tags like [excited], [whispers], [shouting], treat them as delivery cues.
+- Do not read bracket tags aloud.
+- Make tagged sections audibly different in tone and pacing.
+
+#### TRANSCRIPT
+${transcript}`;
 }
