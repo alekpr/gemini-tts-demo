@@ -27,6 +27,13 @@ const podcastPlayerEl = document.getElementById('podcastPlayer');
 const podcastStepCardEl = document.getElementById('podcastStepCard');
 const audioTagGridEl = document.getElementById('audioTagGrid');
 const scriptTagGridEl = document.getElementById('scriptTagGrid');
+const transcriptRequirementsEl = document.getElementById('transcriptRequirements');
+const transcriptLanguageEl = document.getElementById('transcriptLanguage');
+const transcriptDurationEl = document.getElementById('transcriptDuration');
+const transcriptVibeEl = document.getElementById('transcriptVibe');
+const reqSampleThBtn = document.getElementById('reqSampleTh');
+const reqSampleEnBtn = document.getElementById('reqSampleEn');
+const generateTranscriptBtn = document.getElementById('generateTranscriptBtn');
 
 let presets = {};
 let selectedPreset = null;
@@ -43,8 +50,21 @@ sampleEnBtn.addEventListener('click', () => {
     '[excited] Welcome to the Gemini TTS demo studio. [curious] We can shape tone, pacing, and character using natural language instructions. [shouting] Try adding tags to hear dramatic changes!';
 });
 
+reqSampleThBtn.addEventListener('click', () => {
+  transcriptRequirementsEl.value =
+    'อยากได้สคริปต์เปิดงานสัมมนา AI สำหรับผู้บริหารและทีมเทคนิค โทนกระตือรือร้น แต่ยังคงความน่าเชื่อถือ และเน้นให้คนดูมีส่วนร่วม';
+});
+
+reqSampleEnBtn.addEventListener('click', () => {
+  transcriptRequirementsEl.value =
+    'Create an opening transcript for an AI product launch, upbeat and confident, with clear call-to-action moments and emotional highlights.';
+});
+
 podcastTopicEl.value =
   'AI assistant adoption in Thailand: practical use cases for startups, SMEs, and enterprise teams in 2026';
+
+transcriptRequirementsEl.value =
+  'สร้างสคริปต์แนะนำเดโม Gemini TTS สำหรับผู้ชมทั่วไป ให้เข้าใจง่าย สนุก และมีจังหวะเน้นประเด็นสำคัญ';
 
 resetSessionBtn.addEventListener('click', async () => {
   await fetch('/api/session/reset', { method: 'POST' });
@@ -66,6 +86,10 @@ genScriptBtn.addEventListener('click', async () => {
 
 genPodcastBtn.addEventListener('click', async () => {
   await generatePodcastAudio();
+});
+
+generateTranscriptBtn.addEventListener('click', async () => {
+  await generateTranscriptWithAI();
 });
 
 audioTagGridEl.addEventListener('click', (event) => {
@@ -136,6 +160,46 @@ function insertAtCursor(textarea, text) {
 function status(message, isError = false) {
   statusEl.textContent = message;
   statusEl.classList.toggle('error', isError);
+}
+
+async function generateTranscriptWithAI() {
+  const requirements = transcriptRequirementsEl.value.trim();
+  const language = transcriptLanguageEl.value;
+  const vibe = transcriptVibeEl.value.trim();
+  const targetDurationSec = Number(transcriptDurationEl.value || '25');
+
+  if (!requirements) {
+    status('กรุณาระบุ requirement สำหรับ Transcript ก่อน', true);
+    return;
+  }
+
+  generateTranscriptBtn.disabled = true;
+  status('Generating transcript with Gemini...');
+
+  try {
+    const response = await fetch('/api/transcript/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requirements,
+        language,
+        vibe,
+        targetDurationSec
+      })
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || 'Failed to generate transcript');
+    }
+
+    textEl.value = payload.transcript;
+    status('Transcript generated with audio tags and inserted to Transcript box');
+  } catch (err) {
+    status(err.message || 'Unknown error', true);
+  } finally {
+    generateTranscriptBtn.disabled = false;
+  }
 }
 
 async function runGeneration(mode) {

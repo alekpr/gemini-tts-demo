@@ -35,6 +35,13 @@ export interface StyledSpeakerRequest extends SingleSpeakerRequest {
   directorNotes: string;
 }
 
+export interface TranscriptGenerateRequest {
+  requirements: string;
+  language?: 'th' | 'en' | 'mix';
+  vibe?: string;
+  targetDurationSec?: number;
+}
+
 export interface ScriptLine {
   speaker: string;
   text: string;

@@ -3,13 +3,15 @@ import express from 'express';
 import path from 'node:path';
 import { generateSingleSpeakerSpeech, generateStyledSpeakerSpeech } from './tts/singleSpeaker';
 import { generateMultiSpeakerSpeech, generatePodcastPipeline, generatePodcastScript } from './tts/multiSpeaker';
+import { generateTaggedTranscript } from './tts/transcriptGenerator';
 import { PRESETS } from './tts/presets';
 import {
   ModelTier,
   PodcastFromScriptRequest,
   PodcastRequest,
   SingleSpeakerRequest,
-  StyledSpeakerRequest
+  StyledSpeakerRequest,
+  TranscriptGenerateRequest
 } from './types';
 import { getSessionEntries, getSessionTotals, logSessionCost, resetSession } from './utils/sessionLogger';
 
@@ -133,6 +135,36 @@ function normalizePodcastFromScriptInput(body: PodcastFromScriptRequest): Requir
   };
 }
 
+function normalizeTranscriptInput(body: TranscriptGenerateRequest): Required<TranscriptGenerateRequest> {
+  const requirements = body.requirements?.trim();
+  const language = body.language || 'mix';
+  const vibe = body.vibe?.trim() || 'Expressive, conversational, and clear';
+  const targetDurationSec = body.targetDurationSec || 25;
+
+  if (!requirements) {
+    throw new Error('Requirements are required.');
+  }
+
+  if (requirements.length > 2000) {
+    throw new Error('Requirements are too long. Maximum 2000 characters.');
+  }
+
+  if (!['th', 'en', 'mix'].includes(language)) {
+    throw new Error('Invalid language. Use th, en, or mix.');
+  }
+
+  if (targetDurationSec < 5 || targetDurationSec > 180) {
+    throw new Error('targetDurationSec must be between 5 and 180 seconds.');
+  }
+
+  return {
+    requirements,
+    language,
+    vibe,
+    targetDurationSec
+  };
+}
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'gemini-tts-demo' });
 });
@@ -178,6 +210,21 @@ app.post('/api/tts/style', async (req, res) => {
         totals: getSessionTotals(),
         recent: getSessionEntries().slice(0, 5)
       }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(400).json({ error: message });
+  }
+});
+
+app.post('/api/transcript/generate', async (req, res) => {
+  try {
+    const request = normalizeTranscriptInput(req.body as TranscriptGenerateRequest);
+    const result = await generateTaggedTranscript(request);
+
+    res.json({
+      transcript: result.transcript,
+      usage: result.usage
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

@@ -19,7 +19,7 @@
     <main class="layout">
       <section class="panel input-panel">
         <h1>Gemini TTS Demo Studio</h1>
-        <p class="subtitle">Phase 2 - Expressive TTS, Presets, and A/B Voice Compare</p>
+        <p class="subtitle">AI Transcript Builder + Expressive TTS + Podcast Pipeline</p>
 
         <div class="row">
           <label for="modelTier">Model</label>
@@ -56,6 +56,38 @@
             <button class="tag-btn" type="button" data-tag="[very slow]">[very slow]</button>
           </div>
           <p class="hint-text">Tip: ถ้าข้อความเป็นภาษาไทย ควรใช้ tag ภาษาอังกฤษเพื่อผลลัพธ์ที่เสถียรกว่า</p>
+        </div>
+
+        <div class="row ai-builder">
+          <label for="transcriptRequirements">AI Transcript Builder (Gemini)</label>
+          <textarea
+            id="transcriptRequirements"
+            rows="4"
+            placeholder="ระบุหัวข้อ/เป้าหมาย เช่น อยากได้สคริปต์เปิดงานสัมมนา AI โทนสนุก มืออาชีพ และมีอารมณ์ร่วม"
+          ></textarea>
+          <div class="builder-grid">
+            <div>
+              <label for="transcriptLanguage">Language</label>
+              <select id="transcriptLanguage">
+                <option value="mix">Thai + English (mix)</option>
+                <option value="th">Thai</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div>
+              <label for="transcriptDuration">Target Duration (sec)</label>
+              <input id="transcriptDuration" type="number" min="5" max="180" value="25" />
+            </div>
+          </div>
+          <div class="row-tight">
+            <label for="transcriptVibe">Vibe</label>
+            <input id="transcriptVibe" value="Expressive, warm, and engaging" />
+          </div>
+          <div class="quick-actions">
+            <button class="ghost" id="reqSampleTh" type="button">Requirement ตัวอย่างไทย</button>
+            <button class="ghost" id="reqSampleEn" type="button">Requirement sample EN</button>
+          </div>
+          <button id="generateTranscriptBtn" class="primary" type="button">Generate Transcript with Audio Tags</button>
         </div>
 
         <div class="row">
