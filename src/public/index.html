@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gemini TTS Demo Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-a"></div>
+    <div class="bg-orb orb-b"></div>
+
+    <main class="layout">
+      <section class="panel input-panel">
+        <h1>Gemini TTS Demo Studio</h1>
+        <p class="subtitle">Phase 1 - Single Speaker Synthesis + Session Cost Tracking</p>
+
+        <div class="row">
+          <label for="modelTier">Model</label>
+          <select id="modelTier">
+            <option value="flash">gemini-2.5-flash-preview-tts</option>
+            <option value="pro">gemini-2.5-pro-preview-tts</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="voiceName">Voice</label>
+          <input id="voiceName" value="Kore" placeholder="Kore, Puck, Aoede..." />
+        </div>
+
+        <div class="row">
+          <label for="text">Transcript</label>
+          <textarea id="text" rows="10" placeholder="ใส่ข้อความที่ต้องการแปลงเป็นเสียง"></textarea>
+          <div class="quick-actions">
+            <button class="ghost" id="sampleTh" type="button">ตัวอย่างภาษาไทย</button>
+            <button class="ghost" id="sampleEn" type="button">English sample</button>
+          </div>
+        </div>
+
+        <button id="generateBtn" class="primary" type="button">Generate Speech</button>
+        <p id="status" class="status">พร้อมใช้งาน</p>
+      </section>
+
+      <section class="panel output-panel">
+        <h2>Audio Preview</h2>
+        <audio id="player" controls></audio>
+
+        <h2>Cost Summary</h2>
+        <div id="costCard" class="card empty">ยังไม่มีผลลัพธ์</div>
+
+        <div class="session-header">
+          <h2>Session Totals</h2>
+          <button class="ghost" id="resetSession" type="button">Reset</button>
+        </div>
+        <div id="sessionCard" class="card empty">ยังไม่มีการเรียกใช้งาน</div>
+      </section>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
