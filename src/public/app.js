@@ -25,6 +25,8 @@ const genScriptBtn = document.getElementById('genScriptBtn');
 const genPodcastBtn = document.getElementById('genPodcastBtn');
 const podcastPlayerEl = document.getElementById('podcastPlayer');
 const podcastStepCardEl = document.getElementById('podcastStepCard');
+const audioTagGridEl = document.getElementById('audioTagGrid');
+const scriptTagGridEl = document.getElementById('scriptTagGrid');
 
 let presets = {};
 let selectedPreset = null;
@@ -66,6 +68,14 @@ genPodcastBtn.addEventListener('click', async () => {
   await generatePodcastAudio();
 });
 
+audioTagGridEl.addEventListener('click', (event) => {
+  handleTagInsert(event, textEl);
+});
+
+scriptTagGridEl.addEventListener('click', (event) => {
+  handleTagInsert(event, scriptEditorEl);
+});
+
 async function refreshSession() {
   const response = await fetch('/api/session');
   const payload = await response.json();
@@ -94,6 +104,33 @@ function renderSession(totals) {
 
 function prettyJson(value) {
   return JSON.stringify(value, null, 2);
+}
+
+function handleTagInsert(event, targetTextarea) {
+  const button = event.target.closest('button[data-tag]');
+  if (!button) {
+    return;
+  }
+
+  const tag = button.getAttribute('data-tag');
+  if (!tag) {
+    return;
+  }
+
+  insertAtCursor(targetTextarea, `${tag} `);
+}
+
+function insertAtCursor(textarea, text) {
+  const start = textarea.selectionStart ?? textarea.value.length;
+  const end = textarea.selectionEnd ?? textarea.value.length;
+  const before = textarea.value.slice(0, start);
+  const after = textarea.value.slice(end);
+
+  textarea.value = `${before}${text}${after}`;
+  const nextPos = start + text.length;
+  textarea.focus();
+  textarea.selectionStart = nextPos;
+  textarea.selectionEnd = nextPos;
 }
 
 function status(message, isError = false) {

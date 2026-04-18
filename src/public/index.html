@@ -44,6 +44,21 @@
         </div>
 
         <div class="row">
+          <label>Audio Tags (Transcript)</label>
+          <div class="tag-grid" id="audioTagGrid" data-target="text">
+            <button class="tag-btn" type="button" data-tag="[excited]">[excited]</button>
+            <button class="tag-btn" type="button" data-tag="[serious]">[serious]</button>
+            <button class="tag-btn" type="button" data-tag="[curious]">[curious]</button>
+            <button class="tag-btn" type="button" data-tag="[whispers]">[whispers]</button>
+            <button class="tag-btn" type="button" data-tag="[shouting]">[shouting]</button>
+            <button class="tag-btn" type="button" data-tag="[laughs]">[laughs]</button>
+            <button class="tag-btn" type="button" data-tag="[sighs]">[sighs]</button>
+            <button class="tag-btn" type="button" data-tag="[very slow]">[very slow]</button>
+          </div>
+          <p class="hint-text">Tip: ถ้าข้อความเป็นภาษาไทย ควรใช้ tag ภาษาอังกฤษเพื่อผลลัพธ์ที่เสถียรกว่า</p>
+        </div>
+
+        <div class="row">
           <label>Preset Characters</label>
           <div id="presetGrid" class="preset-grid"></div>
         </div>
@@ -102,6 +117,14 @@
         <div class="row">
           <label for="scriptEditor">Script Editor (JSON)</label>
           <textarea id="scriptEditor" rows="9" placeholder='[{"speaker":"HOST","text":"..."}]'></textarea>
+          <div class="tag-grid" id="scriptTagGrid" data-target="scriptEditor">
+            <button class="tag-btn" type="button" data-tag="[excited]">[excited]</button>
+            <button class="tag-btn" type="button" data-tag="[mischievously]">[mischievously]</button>
+            <button class="tag-btn" type="button" data-tag="[sarcastic]">[sarcastic]</button>
+            <button class="tag-btn" type="button" data-tag="[tired]">[tired]</button>
+            <button class="tag-btn" type="button" data-tag="[gasp]">[gasp]</button>
+            <button class="tag-btn" type="button" data-tag="[giggles]">[giggles]</button>
+          </div>
         </div>
 
         <p id="status" class="status">พร้อมใช้งาน</p>
