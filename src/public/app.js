@@ -35,12 +35,12 @@ let lastResultB = null;
 
 sampleThBtn.addEventListener('click', () => {
   textEl.value =
-    'สวัสดีครับ ยินดีต้อนรับสู่ Gemini TTS Demo วันนี้เราจะสาธิตการแปลงข้อความเป็นเสียงพูดด้วยการควบคุมโทนและสไตล์';
+    '[excited] สวัสดีครับ ยินดีต้อนรับสู่ Gemini TTS Demo [serious] วันนี้เราจะสาธิตการแปลงข้อความเป็นเสียงพูดด้วยการควบคุมโทนและสไตล์ [whispers] ลองใส่แท็กเพิ่มเพื่อเปลี่ยนอารมณ์ได้ทันที';
 });
 
 sampleEnBtn.addEventListener('click', () => {
   textEl.value =
-    'Welcome to the Gemini TTS demo studio. We can shape tone, pacing, and character using natural language instructions.';
+    '[excited] Welcome to the Gemini TTS demo studio. [curious] We can shape tone, pacing, and character using natural language instructions. [shouting] Try adding tags to hear dramatic changes!';
 });
 
 podcastTopicEl.value =
