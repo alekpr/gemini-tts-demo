@@ -35,6 +35,31 @@ export interface StyledSpeakerRequest extends SingleSpeakerRequest {
   directorNotes: string;
 }
 
+export interface ScriptLine {
+  speaker: string;
+  text: string;
+}
+
+export interface SpeakerConfig {
+  name: string;
+  voice: string;
+}
+
+export interface PodcastRequest {
+  topic: string;
+  hostName?: string;
+  guestName?: string;
+  hostVoice?: string;
+  guestVoice?: string;
+  modelTier?: ModelTier;
+}
+
+export interface PodcastFromScriptRequest {
+  script: ScriptLine[];
+  speakers: SpeakerConfig[];
+  modelTier?: ModelTier;
+}
+
 export interface SessionTotals {
   calls: number;
   totalUSD: string;

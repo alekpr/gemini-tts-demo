@@ -2,8 +2,15 @@ import 'dotenv/config';
 import express from 'express';
 import path from 'node:path';
 import { generateSingleSpeakerSpeech, generateStyledSpeakerSpeech } from './tts/singleSpeaker';
+import { generateMultiSpeakerSpeech, generatePodcastPipeline, generatePodcastScript } from './tts/multiSpeaker';
 import { PRESETS } from './tts/presets';
-import { ModelTier, SingleSpeakerRequest, StyledSpeakerRequest } from './types';
+import {
+  ModelTier,
+  PodcastFromScriptRequest,
+  PodcastRequest,
+  SingleSpeakerRequest,
+  StyledSpeakerRequest
+} from './types';
 import { getSessionEntries, getSessionTotals, logSessionCost, resetSession } from './utils/sessionLogger';
 
 const app = express();
@@ -52,6 +59,80 @@ function normalizeStyledInput(body: StyledSpeakerRequest): Required<StyledSpeake
   };
 }
 
+function normalizePodcastInput(body: PodcastRequest): Required<PodcastRequest> {
+  const topic = body.topic?.trim();
+  const hostName = body.hostName?.trim() || 'HOST';
+  const guestName = body.guestName?.trim() || 'GUEST';
+  const hostVoice = body.hostVoice?.trim() || 'Puck';
+  const guestVoice = body.guestVoice?.trim() || 'Kore';
+  const modelTier = body.modelTier || 'flash';
+
+  if (!topic) {
+    throw new Error('Topic is required.');
+  }
+
+  if (topic.length > 500) {
+    throw new Error('Topic is too long. Maximum 500 characters.');
+  }
+
+  if (hostName === guestName) {
+    throw new Error('Host and guest names must be different.');
+  }
+
+  if (!ALLOWED_MODELS.includes(modelTier)) {
+    throw new Error('Invalid model tier. Use flash or pro.');
+  }
+
+  return {
+    topic,
+    hostName,
+    guestName,
+    hostVoice,
+    guestVoice,
+    modelTier
+  };
+}
+
+function normalizePodcastFromScriptInput(body: PodcastFromScriptRequest): Required<PodcastFromScriptRequest> {
+  const script = Array.isArray(body.script)
+    ? body.script
+        .map((line) => ({
+          speaker: String(line.speaker || '').trim(),
+          text: String(line.text || '').trim()
+        }))
+        .filter((line) => line.speaker.length > 0 && line.text.length > 0)
+    : [];
+
+  const speakers = Array.isArray(body.speakers)
+    ? body.speakers
+        .map((speaker) => ({
+          name: String(speaker.name || '').trim(),
+          voice: String(speaker.voice || '').trim()
+        }))
+        .filter((speaker) => speaker.name.length > 0 && speaker.voice.length > 0)
+    : [];
+
+  const modelTier = body.modelTier || 'flash';
+
+  if (script.length < 4) {
+    throw new Error('Script is required and must include at least 4 lines.');
+  }
+
+  if (speakers.length !== 2) {
+    throw new Error('Exactly 2 speakers are required.');
+  }
+
+  if (!ALLOWED_MODELS.includes(modelTier)) {
+    throw new Error('Invalid model tier. Use flash or pro.');
+  }
+
+  return {
+    script,
+    speakers,
+    modelTier
+  };
+}
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'gemini-tts-demo' });
 });
@@ -93,6 +174,86 @@ app.post('/api/tts/style', async (req, res) => {
       audioBase64: result.audioWavBase64,
       mimeType: 'audio/wav',
       usage: result.usage,
+      session: {
+        totals: getSessionTotals(),
+        recent: getSessionEntries().slice(0, 5)
+      }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(400).json({ error: message });
+  }
+});
+
+app.post('/api/podcast/script', async (req, res) => {
+  try {
+    const { topic, hostName, guestName } = normalizePodcastInput(req.body as PodcastRequest);
+    const result = await generatePodcastScript(topic, hostName, guestName);
+
+    logSessionCost('flash', result.usage);
+
+    res.json({
+      script: result.script,
+      usage: result.usage,
+      session: {
+        totals: getSessionTotals(),
+        recent: getSessionEntries().slice(0, 5)
+      }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(400).json({ error: message });
+  }
+});
+
+app.post('/api/podcast/audio', async (req, res) => {
+  try {
+    const { script, speakers, modelTier } = normalizePodcastFromScriptInput(req.body as PodcastFromScriptRequest);
+    const result = await generateMultiSpeakerSpeech(script, speakers, modelTier);
+
+    logSessionCost(modelTier, result.usage);
+
+    res.json({
+      audioBase64: result.audioWavBase64,
+      mimeType: 'audio/wav',
+      usage: result.usage,
+      session: {
+        totals: getSessionTotals(),
+        recent: getSessionEntries().slice(0, 5)
+      }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(400).json({ error: message });
+  }
+});
+
+app.post('/api/podcast/generate', async (req, res) => {
+  try {
+    const { topic, hostName, guestName, hostVoice, guestVoice, modelTier } = normalizePodcastInput(
+      req.body as PodcastRequest
+    );
+    const result = await generatePodcastPipeline(topic, hostName, guestName, hostVoice, guestVoice, modelTier);
+
+    logSessionCost('flash', result.step1Usage);
+    logSessionCost(modelTier, result.step2Usage);
+
+    res.json({
+      script: result.script,
+      audioBase64: result.audioWavBase64,
+      mimeType: 'audio/wav',
+      step1: {
+        model: 'gemini-2.5-flash',
+        usage: result.step1Usage
+      },
+      step2: {
+        model: modelTier === 'pro' ? 'gemini-2.5-pro-preview-tts' : 'gemini-2.5-flash-preview-tts',
+        usage: result.step2Usage
+      },
+      total: {
+        totalUSD: result.totalUSD,
+        totalTHB: result.totalTHB
+      },
       session: {
         totals: getSessionTotals(),
         recent: getSessionEntries().slice(0, 5)

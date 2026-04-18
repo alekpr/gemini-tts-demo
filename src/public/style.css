@@ -138,6 +138,23 @@ textarea {
   margin-top: 14px;
 }
 
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(113, 189, 255, 0.5), transparent);
+  margin: 20px 0;
+}
+
+.section-title {
+  color: var(--accent-2);
+  margin-bottom: 12px;
+}
+
+.speaker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .preset-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -215,6 +232,12 @@ audio {
   color: var(--accent-2);
 }
 
+.soft-rule {
+  border: 0;
+  border-top: 1px solid rgba(113, 189, 255, 0.24);
+  margin: 12px 0;
+}
+
 .error {
   color: var(--danger);
 }
@@ -237,6 +260,7 @@ audio {
   }
 
   .preset-grid,
+  .speaker-grid,
   .compare-grid,
   .quick-actions {
     grid-template-columns: 1fr;

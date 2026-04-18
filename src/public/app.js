@@ -15,6 +15,16 @@ const sessionCardEl = document.getElementById('sessionCard');
 const sampleThBtn = document.getElementById('sampleTh');
 const sampleEnBtn = document.getElementById('sampleEn');
 const resetSessionBtn = document.getElementById('resetSession');
+const podcastTopicEl = document.getElementById('podcastTopic');
+const hostNameEl = document.getElementById('hostName');
+const hostVoiceEl = document.getElementById('hostVoice');
+const guestNameEl = document.getElementById('guestName');
+const guestVoiceEl = document.getElementById('guestVoice');
+const scriptEditorEl = document.getElementById('scriptEditor');
+const genScriptBtn = document.getElementById('genScriptBtn');
+const genPodcastBtn = document.getElementById('genPodcastBtn');
+const podcastPlayerEl = document.getElementById('podcastPlayer');
+const podcastStepCardEl = document.getElementById('podcastStepCard');
 
 let presets = {};
 let selectedPreset = null;
@@ -31,6 +41,9 @@ sampleEnBtn.addEventListener('click', () => {
     'Welcome to the Gemini TTS demo studio. We can shape tone, pacing, and character using natural language instructions.';
 });
 
+podcastTopicEl.value =
+  'AI assistant adoption in Thailand: practical use cases for startups, SMEs, and enterprise teams in 2026';
+
 resetSessionBtn.addEventListener('click', async () => {
   await fetch('/api/session/reset', { method: 'POST' });
   await refreshSession();
@@ -43,6 +56,14 @@ generateBtn.addEventListener('click', async () => {
 
 generateStyledBtn.addEventListener('click', async () => {
   await runGeneration('style');
+});
+
+genScriptBtn.addEventListener('click', async () => {
+  await generatePodcastScript();
+});
+
+genPodcastBtn.addEventListener('click', async () => {
+  await generatePodcastAudio();
 });
 
 async function refreshSession() {
@@ -69,6 +90,10 @@ function renderSession(totals) {
     <div>Total USD: <strong>$${totals.totalUSD}</strong></div>
     <div>Total THB: <strong>${totals.totalTHB}</strong></div>
   `;
+}
+
+function prettyJson(value) {
+  return JSON.stringify(value, null, 2);
 }
 
 function status(message, isError = false) {
@@ -137,6 +162,115 @@ async function runGeneration(mode) {
   } finally {
     button.disabled = false;
   }
+}
+
+async function generatePodcastScript() {
+  const topic = podcastTopicEl.value.trim();
+  const hostName = hostNameEl.value.trim();
+  const guestName = guestNameEl.value.trim();
+
+  if (!topic) {
+    status('กรุณาใส่ podcast topic', true);
+    return;
+  }
+
+  genScriptBtn.disabled = true;
+  status('Generating podcast script (Step 1)...');
+
+  try {
+    const response = await fetch('/api/podcast/script', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, hostName, guestName })
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || 'Failed to generate script');
+    }
+
+    scriptEditorEl.value = prettyJson(payload.script);
+    renderSession(payload.session.totals);
+    renderPodcastStepCard(payload.usage, null, null);
+    status('Podcast script ready (Step 1)');
+  } catch (err) {
+    status(err.message || 'Unknown error', true);
+  } finally {
+    genScriptBtn.disabled = false;
+  }
+}
+
+async function generatePodcastAudio() {
+  const hostName = hostNameEl.value.trim() || 'HOST';
+  const guestName = guestNameEl.value.trim() || 'GUEST';
+  const hostVoice = hostVoiceEl.value.trim() || 'Puck';
+  const guestVoice = guestVoiceEl.value.trim() || 'Kore';
+  const modelTier = modelEl.value;
+  const topic = podcastTopicEl.value.trim();
+
+  if (!topic) {
+    status('กรุณาใส่ podcast topic', true);
+    return;
+  }
+
+  genPodcastBtn.disabled = true;
+  status('Generating podcast pipeline (Step 1 + Step 2)...');
+
+  try {
+    const response = await fetch('/api/podcast/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic,
+        hostName,
+        guestName,
+        hostVoice,
+        guestVoice,
+        modelTier
+      })
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || 'Failed to generate podcast');
+    }
+
+    scriptEditorEl.value = prettyJson(payload.script);
+    const audioSrc = `data:${payload.mimeType};base64,${payload.audioBase64}`;
+    podcastPlayerEl.src = audioSrc;
+
+    renderPodcastStepCard(payload.step1.usage, payload.step2.usage, payload.total);
+    renderSession(payload.session.totals);
+    status('Podcast generation success');
+  } catch (err) {
+    status(err.message || 'Unknown error', true);
+  } finally {
+    genPodcastBtn.disabled = false;
+  }
+}
+
+function renderPodcastStepCard(step1Usage, step2Usage, total) {
+  podcastStepCardEl.classList.remove('empty');
+
+  if (!step2Usage || !total) {
+    podcastStepCardEl.innerHTML = `
+      <div><strong>Step 1 - Script Generation</strong></div>
+      ${renderCost(step1Usage)}
+    `;
+    return;
+  }
+
+  podcastStepCardEl.innerHTML = `
+    <div><strong>Step 1 - Script Generation</strong></div>
+    ${renderCost(step1Usage)}
+    <hr class="soft-rule" />
+    <div><strong>Step 2 - Multi-speaker TTS</strong></div>
+    ${renderCost(step2Usage)}
+    <hr class="soft-rule" />
+    <div><strong>Total Session for Pipeline</strong></div>
+    <div>Total USD: <strong>$${total.totalUSD}</strong></div>
+    <div>Total THB: <strong>${total.totalTHB}</strong></div>
+  `;
 }
 
 function renderCompare() {

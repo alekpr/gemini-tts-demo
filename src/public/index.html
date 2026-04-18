@@ -62,6 +62,48 @@
           <button id="generateStyledBtn" class="ghost" type="button">Generate Styled (B)</button>
         </div>
 
+        <div class="section-divider"></div>
+
+        <h2 class="section-title">Phase 3 Podcast Generator</h2>
+
+        <div class="row">
+          <label for="podcastTopic">Topic</label>
+          <textarea
+            id="podcastTopic"
+            rows="3"
+            placeholder="เช่น แนวโน้ม AI ในไทยปี 2026 และผลกระทบต่อธุรกิจ"
+          ></textarea>
+        </div>
+
+        <div class="row speaker-grid">
+          <div>
+            <label for="hostName">Host Name</label>
+            <input id="hostName" value="HOST" />
+          </div>
+          <div>
+            <label for="hostVoice">Host Voice</label>
+            <input id="hostVoice" value="Puck" />
+          </div>
+          <div>
+            <label for="guestName">Guest Name</label>
+            <input id="guestName" value="GUEST" />
+          </div>
+          <div>
+            <label for="guestVoice">Guest Voice</label>
+            <input id="guestVoice" value="Kore" />
+          </div>
+        </div>
+
+        <div class="quick-actions compare-actions">
+          <button id="genScriptBtn" class="ghost" type="button">Step 1: Generate Script</button>
+          <button id="genPodcastBtn" class="primary" type="button">Step 2: Generate Podcast</button>
+        </div>
+
+        <div class="row">
+          <label for="scriptEditor">Script Editor (JSON)</label>
+          <textarea id="scriptEditor" rows="9" placeholder='[{"speaker":"HOST","text":"..."}]'></textarea>
+        </div>
+
         <p id="status" class="status">พร้อมใช้งาน</p>
       </section>
 
@@ -88,6 +130,12 @@
           <button class="ghost" id="resetSession" type="button">Reset</button>
         </div>
         <div id="sessionCard" class="card empty">ยังไม่มีการเรียกใช้งาน</div>
+
+        <div class="section-divider"></div>
+
+        <h2>Podcast Output</h2>
+        <audio id="podcastPlayer" controls></audio>
+        <div id="podcastStepCard" class="card empty">ยังไม่มีผลลัพธ์จาก podcast pipeline</div>
       </section>
     </main>
 
