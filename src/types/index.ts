@@ -31,6 +31,10 @@ export interface SingleSpeakerRequest {
   modelTier?: ModelTier;
 }
 
+export interface StyledSpeakerRequest extends SingleSpeakerRequest {
+  directorNotes: string;
+}
+
 export interface SessionTotals {
   calls: number;
   totalUSD: string;

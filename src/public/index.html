@@ -19,7 +19,7 @@
     <main class="layout">
       <section class="panel input-panel">
         <h1>Gemini TTS Demo Studio</h1>
-        <p class="subtitle">Phase 1 - Single Speaker Synthesis + Session Cost Tracking</p>
+        <p class="subtitle">Phase 2 - Expressive TTS, Presets, and A/B Voice Compare</p>
 
         <div class="row">
           <label for="modelTier">Model</label>
@@ -43,16 +43,45 @@
           </div>
         </div>
 
-        <button id="generateBtn" class="primary" type="button">Generate Speech</button>
+        <div class="row">
+          <label>Preset Characters</label>
+          <div id="presetGrid" class="preset-grid"></div>
+        </div>
+
+        <div class="row">
+          <label for="directorNotes">Director Notes</label>
+          <textarea
+            id="directorNotes"
+            rows="6"
+            placeholder="Style: ...&#10;Pacing: ...&#10;Accent: ..."
+          ></textarea>
+        </div>
+
+        <div class="quick-actions compare-actions">
+          <button id="generateBtn" class="primary" type="button">Generate Base (A)</button>
+          <button id="generateStyledBtn" class="ghost" type="button">Generate Styled (B)</button>
+        </div>
+
         <p id="status" class="status">พร้อมใช้งาน</p>
       </section>
 
       <section class="panel output-panel">
-        <h2>Audio Preview</h2>
-        <audio id="player" controls></audio>
+        <h2>A/B Audio Preview</h2>
+        <div class="compare-grid">
+          <div>
+            <h3 class="compare-title">A: Base Voice</h3>
+            <audio id="playerA" controls></audio>
+            <div id="costCardA" class="card empty">A ยังไม่มีผลลัพธ์</div>
+          </div>
+          <div>
+            <h3 class="compare-title">B: Styled Voice</h3>
+            <audio id="playerB" controls></audio>
+            <div id="costCardB" class="card empty">B ยังไม่มีผลลัพธ์</div>
+          </div>
+        </div>
 
-        <h2>Cost Summary</h2>
-        <div id="costCard" class="card empty">ยังไม่มีผลลัพธ์</div>
+        <h2>Compare Summary</h2>
+        <div id="compareCard" class="card empty">Generate A และ B เพื่อเปรียบเทียบ</div>
 
         <div class="session-header">
           <h2>Session Totals</h2>

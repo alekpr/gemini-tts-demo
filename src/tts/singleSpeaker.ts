@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { calculateCost } from '../utils/costCalculator';
 import { pcm16MonoToWav } from '../utils/wavEncoder';
 import { ModelTier, SpeechResult, UsageMetadataLike } from '../types';
+import { buildDirectorPrompt } from './presets';
 
 const MODEL_MAP: Record<ModelTier, string> = {
   flash: 'gemini-2.5-flash-preview-tts',
@@ -37,12 +38,20 @@ export async function generateSingleSpeakerSpeech(
   voiceName = 'Kore',
   modelTier: ModelTier = 'flash'
 ): Promise<SpeechResult> {
+  return generateSpeechFromPrompt(text, voiceName, modelTier);
+}
+
+async function generateSpeechFromPrompt(
+  promptText: string,
+  voiceName: string,
+  modelTier: ModelTier
+): Promise<SpeechResult> {
   const ai = new GoogleGenAI({ apiKey: getApiKey() });
   const model = MODEL_MAP[modelTier];
 
   const response = await ai.models.generateContent({
     model,
-    contents: [{ parts: [{ text }] }],
+    contents: [{ parts: [{ text: promptText }] }],
     config: {
       responseModalities: ['AUDIO'],
       speechConfig: {
@@ -64,4 +73,14 @@ export async function generateSingleSpeakerSpeech(
     audioWavBase64: wavBuffer.toString('base64'),
     usage
   };
+}
+
+export async function generateStyledSpeakerSpeech(
+  transcript: string,
+  directorNotes: string,
+  voiceName = 'Kore',
+  modelTier: ModelTier = 'flash'
+): Promise<SpeechResult> {
+  const prompt = buildDirectorPrompt(transcript, directorNotes);
+  return generateSpeechFromPrompt(prompt, voiceName, modelTier);
 }

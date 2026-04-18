@@ -2,9 +2,12 @@
 
 Studio-style demo for Gemini TTS on Node.js + TypeScript + Express.
 
-## Features (Phase 1)
+## Features (Phase 1-2)
 
 - Single-speaker text-to-speech with configurable voice
+- Expressive style generation using Director Notes
+- Preset character gallery (Radio DJ, Narrator, Podcast Host, etc.)
+- A/B compare mode for base vs styled voice output
 - WAV audio playback in browser
 - Token usage and cost summary (USD/THB)
 - Session cost accumulation and reset
@@ -44,5 +47,6 @@ npm start
 - `GET /api/health`
 - `GET /api/presets`
 - `POST /api/tts/single`
+- `POST /api/tts/style`
 - `GET /api/session`
 - `POST /api/session/reset`
